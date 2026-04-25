@@ -8,9 +8,9 @@ export async function mezenneCommand(ctx: CommandContext<Context>): Promise<void
   try {
     const rates = await getExchangeRates();
     const text =
-      `💱 *CBAR Məzənnəsi*\n\n` +
+      `💱 *Valyuta məzənnəsi*\n\n` +
       formatRates(rates) +
-      `\n\n_Mənbə: cbar.az_`;
+      `\n\n_${rates.updatedAt} tarixinə_`;
     await ctx.reply(text, { parse_mode: 'Markdown' });
   } catch (err) {
     logger.error('mezenneCommand failed', {
