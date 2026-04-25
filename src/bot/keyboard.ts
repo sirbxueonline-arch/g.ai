@@ -1,14 +1,14 @@
 import { Keyboard } from 'grammy';
 
 export const mainMenu = new Keyboard()
-  .text('💵 Məzənnə').text('🌤 Hava')
+  .text('💵 Məzənnə').text('🌤 Hava').text('📰 Xəbərlər')
   .row()
-  .text('📰 Xəbərlər').text('📅 Bu gün tarixdə')
+  .text('📅 Bu gün tarixdə').text('🎉 Bayram').text('🕐 Vaxt')
   .row()
-  .text('🎉 Növbəti bayram').text('🕐 Vaxt')
+  .text('💱 Konvert').text('🏦 Kredit').text('🔢 Hesab')
   .row()
-  .text('📄 Sənəd izahı').text('📊 Statistika')
+  .text('📝 Xülasə').text('🔤 Tərcümə').text('📄 Sənəd')
   .row()
-  .text('🏆 Liderlər').text('ℹ️ Haqqında')
+  .text('📊 Statistika').text('🏆 Liderlər').text('ℹ️ Haqqında')
   .resized()
   .persistent();
