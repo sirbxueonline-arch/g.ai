@@ -17,66 +17,75 @@ import { vaxtCommand } from '../commands/vaxt.js';
 import { statistikaCommand } from '../commands/statistika.js';
 import { liderlerCommand } from '../commands/liderler.js';
 import { getWeather, formatWeather } from '../../core/tools/weather.js';
+import {
+  mainMenu, maliyyeMenu, melumatMenu,
+  aletlerMenu, aiMenu, meninMenu,
+} from '../keyboard.js';
 
 const DAILY_TOKEN_DOWNGRADE_THRESHOLD = 40_000;
 
-// Keywords that signal a weather intent (Azerbaijani, Russian, English, Turkish)
+// Weather intent detection
 const WEATHER_KEYWORDS = [
   'hava', 'havanı', 'havası', 'hava proqnozu', 'hava necə', 'istidir', 'soyuqdur',
-  'yağış', 'qar yağır', 'günəşli',
-  'weather', 'forecast',
-  'погода', 'какая погода',
-  'hava durumu',
+  'yağış', 'qar yağır', 'günəşli', 'weather', 'forecast', 'погода', 'hava durumu',
 ];
-
-// Known Azerbaijani cities to extract from natural language
 const AZ_CITIES = [
   'Bakı', 'Baku', 'Gəncə', 'Gence', 'Sumqayıt', 'Sumgait',
   'Lənkəran', 'Lankaran', 'Mingəçevir', 'Naxçıvan', 'Nakhchivan',
   'Şirvan', 'Shirvan', 'Xankəndi', 'Şəki', 'Sheki',
   'Quba', 'Qusar', 'Şamaxı', 'Shamakhi', 'Zaqatala',
 ];
-
 function detectWeatherIntent(text: string): { isWeather: boolean; city: string } {
   const lower = text.toLowerCase();
   const isWeather = WEATHER_KEYWORDS.some(kw => lower.includes(kw.toLowerCase()));
   if (!isWeather) return { isWeather: false, city: 'Baku' };
-
-  const foundCity = AZ_CITIES.find(c => text.toLowerCase().includes(c.toLowerCase()));
+  const foundCity = AZ_CITIES.find(c => lower.includes(c.toLowerCase()));
   return { isWeather: true, city: foundCity ?? 'Baku' };
 }
 
-// Menu button tap → delegate to the matching command
-const MENU_ROUTES: Record<string, (ctx: Context) => Promise<void>> = {
-  '💵 Məzənnə':        ctx => mezenneCommand(ctx as Parameters<typeof mezenneCommand>[0]),
-  '🌤 Hava':           ctx => havaCommand(ctx as Parameters<typeof havaCommand>[0]),
-  '📰 Xəbərlər':      ctx => xeberCommand(ctx as Parameters<typeof xeberCommand>[0]),
-  '📅 Bu gün tarixdə': ctx => historyCommand(ctx as Parameters<typeof historyCommand>[0]),
-  '🎉 Bayram':         ctx => bayramCommand(ctx as Parameters<typeof bayramCommand>[0]),
-  '🕐 Vaxt':           ctx => vaxtCommand(ctx as Parameters<typeof vaxtCommand>[0]),
-  '💱 Konvert':        async ctx => { await ctx.reply('İstifadə: `/konvert 100 usd`', { parse_mode: 'Markdown' }); },
-  '🏦 Kredit':         async ctx => { await ctx.reply('İstifadə: `/kredit 10000 12 36`\n_(məbləğ, faiz%, ay)_', { parse_mode: 'Markdown' }); },
-  '🔢 Hesab':          async ctx => { await ctx.reply('İstifadə: `/hesab 25 * 4 + 10`', { parse_mode: 'Markdown' }); },
-  '📝 Xülasə':         async ctx => { await ctx.reply('İstifadə: `/özəllər <mətn>`', { parse_mode: 'Markdown' }); },
-  '🔤 Tərcümə':        async ctx => { await ctx.reply('İstifadə: `/tərcümə <mətn>`', { parse_mode: 'Markdown' }); },
-  '📄 Sənəd':          ctx => senedCommand(ctx as Parameters<typeof senedCommand>[0]),
-  '📊 Statistika':     ctx => statistikaCommand(ctx as Parameters<typeof statistikaCommand>[0]),
-  '🏆 Liderlər':       ctx => liderlerCommand(ctx as Parameters<typeof liderlerCommand>[0]),
+type Handler = (ctx: Context) => Promise<void>;
+const cmd = <T>(fn: (ctx: T) => Promise<void>) => fn as Handler;
+
+const MENU_ROUTES: Record<string, Handler> = {
+  // ── Category tabs ────────────────────────────────────────────
+  '💰 Maliyyə':   async ctx => { await ctx.reply('💰 Maliyyə', { reply_markup: maliyyeMenu }); },
+  '🌍 Məlumat':   async ctx => { await ctx.reply('🌍 Məlumat', { reply_markup: melumatMenu }); },
+  '🛠 Alətlər':   async ctx => { await ctx.reply('🛠 Alətlər', { reply_markup: aletlerMenu }); },
+  '🤖 AI Köməkçi': async ctx => { await ctx.reply('🤖 AI Köməkçi', { reply_markup: aiMenu }); },
+  '📊 Mənim':     async ctx => { await ctx.reply('📊 Mənim', { reply_markup: meninMenu }); },
+  '◀️ Geri':      async ctx => { await ctx.reply('Ana menyu', { reply_markup: mainMenu }); },
+
+  // ── Maliyyə ──────────────────────────────────────────────────
+  '💵 Məzənnə':   cmd(mezenneCommand),
+  '💱 Konvert':   async ctx => { await ctx.reply('💱 *Valyuta çevirici*\n\nİstifadə: `/konvert 100 usd`\nNümunə: `/konvert 50 manat dollar`', { parse_mode: 'Markdown' }); },
+  '🏦 Kredit':    async ctx => { await ctx.reply('🏦 *Kredit kalkulatoru*\n\nİstifadə: `/kredit <məbləğ> <faiz%> <ay>`\nNümunə: `/kredit 10000 12 36`', { parse_mode: 'Markdown' }); },
+
+  // ── Məlumat ──────────────────────────────────────────────────
+  '🌤 Hava':           cmd(havaCommand),
+  '📰 Xəbərlər':      cmd(xeberCommand),
+  '📅 Bu gün tarixdə': cmd(historyCommand),
+  '🎉 Bayram':         cmd(bayramCommand),
+  '🕐 Vaxt':           cmd(vaxtCommand),
+
+  // ── Alətlər ──────────────────────────────────────────────────
+  '🔢 Hesab':   async ctx => { await ctx.reply('🔢 *Kalkulyator*\n\nİstifadə: `/hesab <ifadə>`\nNümunə: `/hesab 25 * 4 + 10`', { parse_mode: 'Markdown' }); },
+  '📄 Sənəd':   cmd(senedCommand),
+
+  // ── AI Köməkçi ───────────────────────────────────────────────
+  '📝 Xülasə':  async ctx => { await ctx.reply('📝 *Mətni xülasələ*\n\nİstifadə: `/özəllər <mətn>`', { parse_mode: 'Markdown' }); },
+  '🔤 Tərcümə': async ctx => { await ctx.reply('🔤 *Tərcümə*\n\nİstifadə: `/tərcümə <mətn>`', { parse_mode: 'Markdown' }); },
+
+  // ── Mənim ────────────────────────────────────────────────────
+  '📊 Statistika': cmd(statistikaCommand),
+  '🏆 Liderlər':   cmd(liderlerCommand),
+
+  // ── Haqqında ─────────────────────────────────────────────────
   'ℹ️ Haqqında': async ctx => {
     await ctx.reply(
       'Mən Guluzada-yam — Azərbaycanlılar üçün hazırlanmış AI köməkçi.\n\n' +
-      '💵 /məzənnə — valyuta kursları\n' +
-      '🌤 /hava — hava proqnozu\n' +
-      '📰 /xəbər — son xəbərlər\n' +
-      '📅 /history — bu gün tarixdə\n' +
-      '🎉 /bayram — növbəti bayram\n' +
-      '🕐 /vaxt — dünya saatları\n' +
-      '💱 /konvert 100 usd — valyuta çevir\n' +
-      '🏦 /kredit — kredit kalkulatoru\n' +
-      '🔢 /hesab — kalkulyator\n' +
-      '📝 /özəllər — mətni xülasələ\n' +
-      '🔤 /tərcümə — mətn tərcüməsi\n' +
-      '📊 /statistika — istifadə statistikan',
+      'Maliyyə, hava, xəbər, tarix, AI alətləri və daha çoxu.\n\n' +
+      'Sadəcə yaz və ya səs göndər — hər şeyi başa düşürəm.',
+      { reply_markup: mainMenu },
     );
   },
 };
@@ -86,7 +95,6 @@ export async function handleMessage(ctx: Context): Promise<void> {
   const tgUser = ctx.from;
   if (!text || !tgUser) return;
 
-  // Handle menu button taps without going to the LLM
   const menuHandler = MENU_ROUTES[text];
   if (menuHandler) {
     await menuHandler(ctx);
@@ -111,7 +119,6 @@ export async function handleMessage(ctx: Context): Promise<void> {
   const user = await getUserByTelegramId(tgUser.id);
   if (!user) return;
 
-  // Detect and persist alphabet preference
   const alphabet = detectAlphabet(text);
   if (alphabet !== 'unknown' && alphabet !== user.alphabet) {
     await updateUserAlphabet(user.id, alphabet);
@@ -120,7 +127,6 @@ export async function handleMessage(ctx: Context): Promise<void> {
   const conversation = await getOrCreateConversation(user.id);
   const history = await getConversationHistory(conversation.id, 20);
 
-  // Persist user message
   await insertMessage({
     conversation_id: conversation.id,
     user_id: user.id,
@@ -129,7 +135,6 @@ export async function handleMessage(ctx: Context): Promise<void> {
     content_type: 'text',
   });
 
-  // Check if user should be downgraded to cheap tier
   const usage = await getDailyUsage(user.id);
   const isHighDailyUser = (usage?.tokens_total ?? 0) >= DAILY_TOKEN_DOWNGRADE_THRESHOLD;
 
@@ -146,7 +151,6 @@ export async function handleMessage(ctx: Context): Promise<void> {
       isHighDailyUser,
     });
 
-    // Persist assistant message
     await insertMessage({
       conversation_id: conversation.id,
       user_id: user.id,

@@ -1,5 +1,6 @@
 import type { CommandContext, Context } from 'grammy';
 import { mainMenu } from '../keyboard.js';
+export { mainMenu };
 
 export async function startCommand(ctx: CommandContext<Context>): Promise<void> {
   const name = ctx.from?.first_name ?? '';
