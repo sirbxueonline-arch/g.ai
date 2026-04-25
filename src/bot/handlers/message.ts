@@ -19,8 +19,15 @@ import { liderlerCommand } from '../commands/liderler.js';
 import { getWeather, formatWeather } from '../../core/tools/weather.js';
 import {
   mainMenu, maliyyeMenu, melumatMenu,
-  aletlerMenu, aiMenu, meninMenu,
+  aletlerMenu, aiMenu, meninMenu, idmanMenu,
 } from '../keyboard.js';
+import { yanacaqCommand } from '../commands/yanacaq.js';
+import { edvCommand } from '../commands/edv.js';
+import { sozdəgunCommand } from '../commands/sozdegun.js';
+import { sitatCommand } from '../commands/sitat.js';
+import { imtahanCommand } from '../commands/imtahan.js';
+import { getSportNews } from '../../core/tools/sports.js';
+import type { SportCategory } from '../../core/tools/sports.js';
 
 const DAILY_TOKEN_DOWNGRADE_THRESHOLD = 40_000;
 
@@ -46,19 +53,36 @@ function detectWeatherIntent(text: string): { isWeather: boolean; city: string }
 type Handler = (ctx: Context) => Promise<void>;
 const cmd = <T>(fn: (ctx: T) => Promise<void>) => fn as Handler;
 
+async function showSport(ctx: Context, category: SportCategory, emoji: string): Promise<void> {
+  await ctx.replyWithChatAction('typing');
+  try {
+    const news = await getSportNews(category);
+    if (!news.length) { await ctx.reply('Xəbər tapılmadı.', { reply_markup: idmanMenu }); return; }
+    const label = category.charAt(0).toUpperCase() + category.slice(1);
+    const lines = news.map((n, i) => `${i + 1}. [${n.title}](${n.link})`).join('\n\n');
+    await ctx.reply(`${emoji} *${label} xəbərləri*\n\n${lines}`,
+      { parse_mode: 'Markdown', link_preview_options: { is_disabled: true }, reply_markup: idmanMenu });
+  } catch {
+    await ctx.reply('İdman xəbərlərini əldə edə bilmədim. Bir az sonra cəhd et.', { reply_markup: idmanMenu });
+  }
+}
+
 const MENU_ROUTES: Record<string, Handler> = {
   // ── Category tabs ────────────────────────────────────────────
-  '💰 Maliyyə':   async ctx => { await ctx.reply('💰 Maliyyə', { reply_markup: maliyyeMenu }); },
-  '🌍 Məlumat':   async ctx => { await ctx.reply('🌍 Məlumat', { reply_markup: melumatMenu }); },
-  '🛠 Alətlər':   async ctx => { await ctx.reply('🛠 Alətlər', { reply_markup: aletlerMenu }); },
+  '💰 Maliyyə':    async ctx => { await ctx.reply('💰 Maliyyə', { reply_markup: maliyyeMenu }); },
+  '🌍 Məlumat':    async ctx => { await ctx.reply('🌍 Məlumat', { reply_markup: melumatMenu }); },
+  '🛠 Alətlər':    async ctx => { await ctx.reply('🛠 Alətlər', { reply_markup: aletlerMenu }); },
   '🤖 AI Köməkçi': async ctx => { await ctx.reply('🤖 AI Köməkçi', { reply_markup: aiMenu }); },
-  '📊 Mənim':     async ctx => { await ctx.reply('📊 Mənim', { reply_markup: meninMenu }); },
-  '◀️ Geri':      async ctx => { await ctx.reply('Ana menyu', { reply_markup: mainMenu }); },
+  '⚽ İdman':       async ctx => { await ctx.reply('⚽ İdman — kateqoriya seç:', { reply_markup: idmanMenu }); },
+  '📊 Mənim':      async ctx => { await ctx.reply('📊 Mənim', { reply_markup: meninMenu }); },
+  '◀️ Geri':       async ctx => { await ctx.reply('Ana menyu', { reply_markup: mainMenu }); },
 
   // ── Maliyyə ──────────────────────────────────────────────────
-  '💵 Məzənnə':   cmd(mezenneCommand),
-  '💱 Konvert':   async ctx => { await ctx.reply('💱 *Valyuta çevirici*\n\nİstifadə: `/konvert 100 usd`\nNümunə: `/konvert 50 manat dollar`', { parse_mode: 'Markdown' }); },
-  '🏦 Kredit':    async ctx => { await ctx.reply('🏦 *Kredit kalkulatoru*\n\nİstifadə: `/kredit <məbləğ> <faiz%> <ay>`\nNümunə: `/kredit 10000 12 36`', { parse_mode: 'Markdown' }); },
+  '💵 Məzənnə': cmd(mezenneCommand),
+  '💱 Konvert':  async ctx => { await ctx.reply('💱 *Valyuta çevirici*\n\nİstifadə: `/konvert 100 usd`\nNümunə: `/konvert 50 manat dollar`', { parse_mode: 'Markdown' }); },
+  '🏦 Kredit':   async ctx => { await ctx.reply('🏦 *Kredit kalkulatoru*\n\nİstifadə: `/kredit <məbləğ> <faiz%> <ay>`\nNümunə: `/kredit 10000 12 36`', { parse_mode: 'Markdown' }); },
+  '🧮 ƏDV':      cmd(edvCommand),
+  '⛽ Yanacaq':  cmd(yanacaqCommand),
 
   // ── Məlumat ──────────────────────────────────────────────────
   '🌤 Hava':           cmd(havaCommand),
@@ -66,14 +90,29 @@ const MENU_ROUTES: Record<string, Handler> = {
   '📅 Bu gün tarixdə': cmd(historyCommand),
   '🎉 Bayram':         cmd(bayramCommand),
   '🕐 Vaxt':           cmd(vaxtCommand),
+  '🌐 Viza':           async ctx => { await ctx.reply('🌐 *Viza məlumatı*\n\nİstifadə: `/viza <ölkə>`\nNümunə: `/viza türkiyə`', { parse_mode: 'Markdown' }); },
 
   // ── Alətlər ──────────────────────────────────────────────────
-  '🔢 Hesab':   async ctx => { await ctx.reply('🔢 *Kalkulyator*\n\nİstifadə: `/hesab <ifadə>`\nNümunə: `/hesab 25 * 4 + 10`', { parse_mode: 'Markdown' }); },
-  '📄 Sənəd':   cmd(senedCommand),
+  '🔢 Hesab':     async ctx => { await ctx.reply('🔢 *Kalkulyator*\n\nİstifadə: `/hesab <ifadə>`\nNümunə: `/hesab 25 * 4 + 10`', { parse_mode: 'Markdown' }); },
+  '📏 Ölçü çevir': async ctx => { await ctx.reply('📏 *Ölçü çevirici*\n\nİstifadə: `/olcu <rəqəm> <vahid>`\nNümunə: `/olcu 100 km` · `/olcu 37 c`', { parse_mode: 'Markdown' }); },
+  '📱 QR kod':    async ctx => { await ctx.reply('📱 *QR kod*\n\nİstifadə: `/qrkod <mətn və ya link>`', { parse_mode: 'Markdown' }); },
+  '🔗 Link qısal': async ctx => { await ctx.reply('🔗 *Link qısaldıcı*\n\nİstifadə: `/link <url>`', { parse_mode: 'Markdown' }); },
+  '📄 Sənəd':     cmd(senedCommand),
 
   // ── AI Köməkçi ───────────────────────────────────────────────
-  '📝 Xülasə':  async ctx => { await ctx.reply('📝 *Mətni xülasələ*\n\nİstifadə: `/özəllər <mətn>`', { parse_mode: 'Markdown' }); },
-  '🔤 Tərcümə': async ctx => { await ctx.reply('🔤 *Tərcümə*\n\nİstifadə: `/tərcümə <mətn>`', { parse_mode: 'Markdown' }); },
+  '📝 Xülasə':       async ctx => { await ctx.reply('📝 *Mətni xülasələ*\n\nİstifadə: `/özəllər <mətn>`', { parse_mode: 'Markdown' }); },
+  '🔤 Tərcümə':      async ctx => { await ctx.reply('🔤 *Tərcümə*\n\nİstifadə: `/tərcümə <mətn>`', { parse_mode: 'Markdown' }); },
+  '💡 Günün sözü':   cmd(sozdəgunCommand),
+  '🎯 Günün sitatı': cmd(sitatCommand),
+  '🎓 İmtahan köməyi': async ctx => { await ctx.reply('🎓 *İmtahan köməyi*\n\nİstifadə: `/imtahan <sualın>`\nNümunə: `/imtahan riyaziyyatdan hansı mövzular çox çıxır`', { parse_mode: 'Markdown' }); },
+
+  // ── İdman sub-menu ───────────────────────────────────────────
+  '⚽ Futbol':       async ctx => showSport(ctx, 'futbol', '⚽'),
+  '🏀 Basketbol':   async ctx => showSport(ctx, 'basketbol', '🏀'),
+  '🤼 Güləş':       async ctx => showSport(ctx, 'güləş', '🤼'),
+  '🥊 Boks':        async ctx => showSport(ctx, 'boks', '🥊'),
+  '🎾 Tenis':       async ctx => showSport(ctx, 'tenis', '🎾'),
+  '🏅 Digər idman': async ctx => showSport(ctx, 'digər', '🏅'),
 
   // ── Mənim ────────────────────────────────────────────────────
   '📊 Statistika': cmd(statistikaCommand),
@@ -83,7 +122,7 @@ const MENU_ROUTES: Record<string, Handler> = {
   'ℹ️ Haqqında': async ctx => {
     await ctx.reply(
       'Mən Guluzada-yam — Azərbaycanlılar üçün hazırlanmış AI köməkçi.\n\n' +
-      'Maliyyə, hava, xəbər, tarix, AI alətləri və daha çoxu.\n\n' +
+      'Maliyyə, hava, xəbər, tarix, AI alətləri, idman və daha çoxu.\n\n' +
       'Sadəcə yaz və ya səs göndər — hər şeyi başa düşürəm.',
       { reply_markup: mainMenu },
     );

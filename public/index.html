@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guluzada — Azərbaycanlılar üçün AI köməkçi</title>
+  <meta name="description" content="Məzənnə, hava, xəbər, tərcümə və daha çoxu — Telegram-da Azərbaycan dilində." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0e0e11;
+      --surface: #17171c;
+      --border: #2a2a35;
+      --accent: #3b82f6;
+      --accent-glow: rgba(59,130,246,0.25);
+      --text: #f0f0f5;
+      --muted: #8888a0;
+      --flag: #ef4444;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── NAV ── */
+    nav {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+    }
+    .logo { font-weight: 800; font-size: 1.2rem; letter-spacing: -0.5px; }
+    .logo span { color: var(--accent); }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 5rem 2rem 4rem;
+      max-width: 760px;
+      width: 100%;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem 1rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 6px #22c55e;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 1.25rem;
+    }
+    h1 .highlight {
+      background: linear-gradient(135deg, var(--accent), #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 520px;
+      margin-bottom: 2.5rem;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.85rem 2rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+    .cta:hover { transform: translateY(-2px); box-shadow: 0 0 44px var(--accent-glow); }
+    .cta svg { width: 20px; height: 20px; }
+
+    /* ── FEATURES GRID ── */
+    .features {
+      width: 100%;
+      max-width: 1000px;
+      padding: 0 2rem 5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .card-icon { font-size: 1.8rem; margin-bottom: 0.75rem; }
+    .card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .card p { font-size: 0.85rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+
+    @media (max-width: 500px) {
+      nav { padding: 1.25rem 1.25rem; }
+      .hero { padding: 3rem 1.25rem 3rem; }
+      .features { padding: 0 1.25rem 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="logo">Gulu<span>zada</span></div>
+    <a href="https://t.me/guluzada_bot" target="_blank">Telegram-a keç →</a>
+  </nav>
+
+  <section class="hero">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Azərbaycan dilində · Telegram-da
+    </div>
+
+    <h1>
+      Azərbaycanlılar üçün<br />
+      <span class="highlight">AI köməkçi</span>
+    </h1>
+
+    <p class="subtitle">
+      Məzənnə, hava, xəbər, kredit hesabı, tərcümə, sənəd izahı
+      və daha çoxu — Telegram-da, Azərbaycan dilində, pulsuz.
+    </p>
+
+    <a class="cta" href="https://t.me/guluzada_bot" target="_blank">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.48 14.49l-2.95-.924c-.642-.204-.657-.642.136-.953l11.57-4.461c.537-.194 1.006.131.826.096z"/>
+      </svg>
+      Telegram-da aç
+    </a>
+  </section>
+
+  <section class="features">
+    <div class="card">
+      <div class="card-icon">💵</div>
+      <h3>Canlı məzənnə</h3>
+      <p>USD, EUR, RUB, TRY, GBP — hər gün yenilənən CBAR kursları.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌤</div>
+      <h3>Hava proqnozu</h3>
+      <p>Bakı və istənilən şəhər üçün cari hava, temperatur, külək.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📰</div>
+      <h3>Son xəbərlər</h3>
+      <p>AzərTAc və idman mənbələrindən ən son xəbərlər.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📄</div>
+      <h3>Sənəd izahı</h3>
+      <p>Rəsmi sənədin şəklini göndər — sadə dildə izahat al.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎙</div>
+      <h3>Səs mesajı</h3>
+      <p>Yazmağa vaxt yoxdur? Səs göndər, Guluzada eşidib cavablayır.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏦</div>
+      <h3>Kredit kalkulatoru</h3>
+      <p>Aylıq ödəniş, ümumi faiz — saniyələr içində hesabla.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔤</div>
+      <h3>Tərcümə</h3>
+      <p>Azərbaycan ↔ ingilis və digər dillər arasında ani tərcümə.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏆</div>
+      <h3>Liderlik cədvəli</h3>
+      <p>Bu ay ən aktiv istifadəçilər — aylıq reytinq.</p>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 Guluzada · Azərbaycanlılar üçün hazırlanmışdır 🇦🇿
+  </footer>
+
+</body>
+</html>
