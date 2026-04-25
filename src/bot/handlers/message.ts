@@ -11,6 +11,11 @@ import { mezenneCommand } from '../commands/mezenne.js';
 import { havaCommand } from '../commands/hava.js';
 import { historyCommand } from '../commands/history.js';
 import { senedCommand } from '../commands/senəd.js';
+import { xeberCommand } from '../commands/xeber.js';
+import { bayramCommand } from '../commands/bayram.js';
+import { vaxtCommand } from '../commands/vaxt.js';
+import { statistikaCommand } from '../commands/statistika.js';
+import { liderlerCommand } from '../commands/liderler.js';
 import { getWeather, formatWeather } from '../../core/tools/weather.js';
 
 const DAILY_TOKEN_DOWNGRADE_THRESHOLD = 40_000;
@@ -43,19 +48,30 @@ function detectWeatherIntent(text: string): { isWeather: boolean; city: string }
 
 // Menu button tap → delegate to the matching command
 const MENU_ROUTES: Record<string, (ctx: Context) => Promise<void>> = {
-  '💵 Məzənnə': ctx => mezenneCommand(ctx as Parameters<typeof mezenneCommand>[0]),
-  '🌤 Hava': ctx => havaCommand(ctx as Parameters<typeof havaCommand>[0]),
+  '💵 Məzənnə':        ctx => mezenneCommand(ctx as Parameters<typeof mezenneCommand>[0]),
+  '🌤 Hava':           ctx => havaCommand(ctx as Parameters<typeof havaCommand>[0]),
+  '📰 Xəbərlər':      ctx => xeberCommand(ctx as Parameters<typeof xeberCommand>[0]),
   '📅 Bu gün tarixdə': ctx => historyCommand(ctx as Parameters<typeof historyCommand>[0]),
-  '📄 Sənəd izahı': ctx => senedCommand(ctx as Parameters<typeof senedCommand>[0]),
+  '🎉 Növbəti bayram': ctx => bayramCommand(ctx as Parameters<typeof bayramCommand>[0]),
+  '🕐 Vaxt':           ctx => vaxtCommand(ctx as Parameters<typeof vaxtCommand>[0]),
+  '📄 Sənəd izahı':   ctx => senedCommand(ctx as Parameters<typeof senedCommand>[0]),
+  '📊 Statistika':     ctx => statistikaCommand(ctx as Parameters<typeof statistikaCommand>[0]),
+  '🏆 Liderlər':       ctx => liderlerCommand(ctx as Parameters<typeof liderlerCommand>[0]),
   'ℹ️ Haqqında': async ctx => {
     await ctx.reply(
       'Mən Guluzada-yam — Azərbaycanlılar üçün hazırlanmış AI köməkçi.\n\n' +
-      '• 💵 Məzənnə — CBAR valyuta kursları\n' +
-      '• 🌤 Hava — hava proqnozu\n' +
-      '• 📅 Bu gün tarixdə — tarix hadisələri\n' +
-      '• 📄 Sənəd izahı — rəsmi sənədlər\n' +
-      '• 🎙 Səs mesajı göndər — eşidirəm\n\n' +
-      'Sadəcə yaz və ya səs göndər!',
+      '💵 /məzənnə — valyuta kursları\n' +
+      '🌤 /hava — hava proqnozu\n' +
+      '📰 /xəbər — son xəbərlər\n' +
+      '📅 /history — bu gün tarixdə\n' +
+      '🎉 /bayram — növbəti bayram\n' +
+      '🕐 /vaxt — dünya saatları\n' +
+      '💱 /konvert 100 usd — valyuta çevir\n' +
+      '🏦 /kredit — kredit kalkulatoru\n' +
+      '🔢 /hesab — kalkulyator\n' +
+      '📝 /özəllər — mətni xülasələ\n' +
+      '🔤 /tərcümə — mətn tərcüməsi\n' +
+      '📊 /statistika — istifadə statistikan',
     );
   },
 };
