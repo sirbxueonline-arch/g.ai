@@ -11,8 +11,35 @@ import { mezenneCommand } from '../commands/mezenne.js';
 import { havaCommand } from '../commands/hava.js';
 import { historyCommand } from '../commands/history.js';
 import { senedCommand } from '../commands/senəd.js';
+import { getWeather, formatWeather } from '../../core/tools/weather.js';
 
 const DAILY_TOKEN_DOWNGRADE_THRESHOLD = 40_000;
+
+// Keywords that signal a weather intent (Azerbaijani, Russian, English, Turkish)
+const WEATHER_KEYWORDS = [
+  'hava', 'havanı', 'havası', 'hava proqnozu', 'hava necə', 'istidir', 'soyuqdur',
+  'yağış', 'qar yağır', 'günəşli',
+  'weather', 'forecast',
+  'погода', 'какая погода',
+  'hava durumu',
+];
+
+// Known Azerbaijani cities to extract from natural language
+const AZ_CITIES = [
+  'Bakı', 'Baku', 'Gəncə', 'Gence', 'Sumqayıt', 'Sumgait',
+  'Lənkəran', 'Lankaran', 'Mingəçevir', 'Naxçıvan', 'Nakhchivan',
+  'Şirvan', 'Shirvan', 'Xankəndi', 'Şəki', 'Sheki',
+  'Quba', 'Qusar', 'Şamaxı', 'Shamakhi', 'Zaqatala',
+];
+
+function detectWeatherIntent(text: string): { isWeather: boolean; city: string } {
+  const lower = text.toLowerCase();
+  const isWeather = WEATHER_KEYWORDS.some(kw => lower.includes(kw.toLowerCase()));
+  if (!isWeather) return { isWeather: false, city: 'Baku' };
+
+  const foundCity = AZ_CITIES.find(c => text.toLowerCase().includes(c.toLowerCase()));
+  return { isWeather: true, city: foundCity ?? 'Baku' };
+}
 
 // Menu button tap → delegate to the matching command
 const MENU_ROUTES: Record<string, (ctx: Context) => Promise<void>> = {
@@ -42,6 +69,21 @@ export async function handleMessage(ctx: Context): Promise<void> {
   const menuHandler = MENU_ROUTES[text];
   if (menuHandler) {
     await menuHandler(ctx);
+    return;
+  }
+
+  // Natural language weather intent
+  const { isWeather, city } = detectWeatherIntent(text);
+  if (isWeather) {
+    await ctx.replyWithChatAction('typing');
+    try {
+      const weather = await getWeather(city);
+      await ctx.reply(`*${weather.city} hava proqnozu*\n\n` + formatWeather(weather), {
+        parse_mode: 'Markdown',
+      });
+    } catch {
+      await ctx.reply('Hava məlumatını əldə edə bilmədim. Bir az sonra cəhd et.');
+    }
     return;
   }
 
