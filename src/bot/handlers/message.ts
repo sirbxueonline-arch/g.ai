@@ -7,13 +7,43 @@ import { generateResponse } from '../../core/llm.js';
 import { detectAlphabet } from '../../lib/alphabet.js';
 import { logger } from '../../lib/logger.js';
 import { isAppError } from '../../lib/errors.js';
+import { mezenneCommand } from '../commands/mezenne.js';
+import { havaCommand } from '../commands/hava.js';
+import { historyCommand } from '../commands/history.js';
+import { senedCommand } from '../commands/senəd.js';
 
 const DAILY_TOKEN_DOWNGRADE_THRESHOLD = 40_000;
+
+// Menu button tap → delegate to the matching command
+const MENU_ROUTES: Record<string, (ctx: Context) => Promise<void>> = {
+  '💵 Məzənnə': ctx => mezenneCommand(ctx as Parameters<typeof mezenneCommand>[0]),
+  '🌤 Hava': ctx => havaCommand(ctx as Parameters<typeof havaCommand>[0]),
+  '📅 Bu gün tarixdə': ctx => historyCommand(ctx as Parameters<typeof historyCommand>[0]),
+  '📄 Sənəd izahı': ctx => senedCommand(ctx as Parameters<typeof senedCommand>[0]),
+  'ℹ️ Haqqında': async ctx => {
+    await ctx.reply(
+      'Mən Guluzada-yam — Azərbaycanlılar üçün hazırlanmış AI köməkçi.\n\n' +
+      '• 💵 Məzənnə — CBAR valyuta kursları\n' +
+      '• 🌤 Hava — hava proqnozu\n' +
+      '• 📅 Bu gün tarixdə — tarix hadisələri\n' +
+      '• 📄 Sənəd izahı — rəsmi sənədlər\n' +
+      '• 🎙 Səs mesajı göndər — eşidirəm\n\n' +
+      'Sadəcə yaz və ya səs göndər!',
+    );
+  },
+};
 
 export async function handleMessage(ctx: Context): Promise<void> {
   const text = ctx.message?.text;
   const tgUser = ctx.from;
   if (!text || !tgUser) return;
+
+  // Handle menu button taps without going to the LLM
+  const menuHandler = MENU_ROUTES[text];
+  if (menuHandler) {
+    await menuHandler(ctx);
+    return;
+  }
 
   const user = await getUserByTelegramId(tgUser.id);
   if (!user) return;

@@ -1,7 +1,12 @@
 import type { CommandContext, Context } from 'grammy';
 import { getOnThisDayEvents } from '../../core/tools/history.js';
-import { generateResponse } from '../../core/llm.js';
 import { logger } from '../../lib/logger.js';
+
+const MONTHS: Record<number, string> = {
+  1: 'yanvar', 2: 'fevral', 3: 'mart', 4: 'aprel',
+  5: 'may', 6: 'iyun', 7: 'iyul', 8: 'avqust',
+  9: 'sentyabr', 10: 'oktyabr', 11: 'noyabr', 12: 'dekabr',
+};
 
 export async function historyCommand(ctx: CommandContext<Context>): Promise<void> {
   await ctx.replyWithChatAction('typing');
@@ -16,24 +21,11 @@ export async function historyCommand(ctx: CommandContext<Context>): Promise<void
     const now = new Date();
     const day = now.getDate();
     const month = now.getMonth() + 1;
+    const monthName = MONTHS[month] ?? '';
 
-    const eventLines = events
-      .map(e => `- ${e.year}: ${e.text}`)
-      .join('\n');
+    const lines = events.map(e => `• *${e.year}* — ${e.text}`).join('\n\n');
 
-    const result = await generateResponse({
-      messages: [
-        {
-          role: 'user',
-          content:
-            `Bu gün ${day}.${month}. Aşağıdakı tarix hadisələrini Azərbaycan dilində təqdim et. ` +
-            `Hər hadisəni bir-iki cümlə ilə aydın, maraqlı şəkildə yaz. ` +
-            `Format: il — izahat. Hadisələr:\n${eventLines}`,
-        },
-      ],
-    });
-
-    await ctx.reply(`📅 *Bu gün tarixdə — ${day}.${month}*\n\n${result.content}`, {
+    await ctx.reply(`📅 *${day} ${monthName} — tarixdə bu gün*\n\n${lines}`, {
       parse_mode: 'Markdown',
     });
   } catch (err) {
