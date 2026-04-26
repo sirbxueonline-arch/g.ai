@@ -2,6 +2,7 @@ import { Bot } from 'grammy';
 import { userUpsertMiddleware } from './middleware/userUpsert.js';
 import { rateLimiterMiddleware } from './middleware/rateLimiter.js';
 import { requestLoggerMiddleware } from './middleware/requestLogger.js';
+import { commandCounterMiddleware } from './middleware/commandCounter.js';
 import { startCommand } from './commands/start.js';
 import { mezenneCommand } from './commands/mezenne.js';
 import { havaCommand } from './commands/hava.js';
@@ -40,6 +41,7 @@ export const bot = new Bot(token);
 bot.use(requestLoggerMiddleware);
 bot.use(userUpsertMiddleware);
 bot.use(rateLimiterMiddleware);
+bot.use(commandCounterMiddleware);
 
 bot.command('start', startCommand);
 bot.command(['mezenne', 'məzənnə'], mezenneCommand);
