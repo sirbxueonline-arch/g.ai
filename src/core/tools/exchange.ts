@@ -1,5 +1,8 @@
 import { logger } from '../../lib/logger.js';
 
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+let cachedRates: { data: ExchangeRates; expiresAt: number } | null = null;
+
 export interface ExchangeRates {
   usd: number;
   eur: number;
@@ -15,6 +18,8 @@ interface ERApiResponse {
 }
 
 export async function getExchangeRates(): Promise<ExchangeRates> {
+  if (cachedRates && Date.now() < cachedRates.expiresAt) return cachedRates.data;
+
   try {
     const res = await fetch('https://api.exchangerate-api.com/v4/latest/USD', {
       signal: AbortSignal.timeout(8000),
@@ -28,7 +33,7 @@ export async function getExchangeRates(): Promise<ExchangeRates> {
     const azn = r['AZN'] ?? 1.7;
     const toAZN = (code: string) => azn / (r[code] ?? 1);
 
-    return {
+    const rates: ExchangeRates = {
       usd: azn,
       eur: toAZN('EUR'),
       rub: toAZN('RUB'),
@@ -36,6 +41,8 @@ export async function getExchangeRates(): Promise<ExchangeRates> {
       gbp: toAZN('GBP'),
       updatedAt: data.date,
     };
+    cachedRates = { data: rates, expiresAt: Date.now() + CACHE_TTL_MS };
+    return rates;
   } catch (err) {
     logger.error('Failed to fetch exchange rates', {
       error: err instanceof Error ? err.message : String(err),

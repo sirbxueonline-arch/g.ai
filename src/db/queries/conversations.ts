@@ -8,9 +8,14 @@ export interface ConversationRow {
   created_at: string;
 }
 
+function bakuToday(): string {
+  // Baku is UTC+4; avoid splitting the day at 20:00 Baku time
+  return new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
 export async function getOrCreateConversation(userId: string): Promise<ConversationRow> {
-  // Re-use open conversation from today
-  const today = new Date().toISOString().slice(0, 10);
+  // Re-use open conversation from today (Baku time)
+  const today = bakuToday();
   const { data: existing, error: fetchErr } = await db
     .from('conversations')
     .select()

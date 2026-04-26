@@ -11,7 +11,7 @@ export interface UsageRow {
 }
 
 export async function getDailyUsage(userId: string): Promise<UsageRow | null> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { data, error } = await db
     .from('usage_daily')
     .select()
@@ -28,7 +28,7 @@ export async function incrementUsage(
   field: 'message_count' | 'document_count',
   amount = 1,
 ): Promise<void> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { error } = await db.rpc('increment_usage', {
     p_user_id: userId,
     p_date: today,
@@ -39,7 +39,7 @@ export async function incrementUsage(
 }
 
 export async function incrementVoiceSeconds(userId: string, seconds: number): Promise<void> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { error } = await db.rpc('increment_usage', {
     p_user_id: userId,
     p_date: today,
@@ -50,7 +50,7 @@ export async function incrementVoiceSeconds(userId: string, seconds: number): Pr
 }
 
 export async function incrementTokens(userId: string, tokens: number): Promise<void> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const { error } = await db.rpc('increment_usage', {
     p_user_id: userId,
     p_date: today,

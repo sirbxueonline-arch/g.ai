@@ -85,6 +85,6 @@ export function formatWeather(w: WeatherData): string {
   return [
     `🌡 ${w.tempC}°C (hiss olunur: ${w.feelsLikeC}°C) — ${w.description}`,
     `💧 Rütubət: ${w.humidity}%`,
-    `💨 Külək: ${w.windKph} km/s`,
+    `💨 Külək: ${w.windKph} km/saat`,
   ].join('\n');
 }

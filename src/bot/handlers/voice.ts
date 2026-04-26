@@ -87,7 +87,8 @@ export async function handleVoice(ctx: Context): Promise<void> {
     await incrementTokens(user.id, result.tokensIn + result.tokensOut);
 
     // Show transcript so user knows what was heard
-    const reply = `🎙 _"${transcript}"_\n\n${result.content}`;
+    const escaped = transcript.replace(/[_*`[]/g, '\\$&');
+    const reply = `🎙 _"${escaped}"_\n\n${result.content}`;
     await ctx.reply(reply, { parse_mode: 'Markdown' });
   } catch (err) {
     logger.error('handleVoice failed', {

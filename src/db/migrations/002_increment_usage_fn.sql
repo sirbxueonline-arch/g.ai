@@ -22,6 +22,8 @@ begin
   elsif p_field = 'tokens_total' then
     update usage_daily set tokens_total = tokens_total + p_amount
     where user_id = p_user_id and date = p_date;
+  else
+    raise exception 'increment_usage: unknown field "%"', p_field;
   end if;
 end;
 $$;
